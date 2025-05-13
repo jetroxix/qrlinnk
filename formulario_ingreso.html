@@ -104,9 +104,6 @@
 
             try {
                 // Enviar datos al backend
-                // Detectar la base URL dinámica dependiendo del entorno
-const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000'; // Cambia REACT_APP_API_URL según tu configuración
-
                 const response = await fetch('${BASE_URL}/registrar', {
                     method: 'POST',
                     headers: {
