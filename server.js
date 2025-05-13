@@ -25,29 +25,18 @@ const db = new sqlite3.Database(':memory:', (err) => {
     console.log('Conectado a la base de datos SQLite en memoria.');
 });
 
-// Crear tabla de usuarios con restricción UNIQUE en email y edicion
+// Crear tabla de usuarios y descargas
 db.serialize(() => {
     db.run(`
         CREATE TABLE usuarios (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT NOT NULL,
-            edicion TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            edicion TEXT UNIQUE NOT NULL, /* Agregar restricción de unicidad */
             enlace_unico TEXT NOT NULL,
-            descargado INTEGER DEFAULT 0,
-            CONSTRAINT unique_email_edicion UNIQUE (email, edicion)
+            descargado INTEGER DEFAULT 0
         )
-    `, (err) => {
-        if (err) {
-            console.error('Error al crear la tabla "usuarios":', err.message);
-        } else {
-            console.log('Tabla "usuarios" creada con restricción UNIQUE.');
-        }
-    });
-});
-
-// Ruta para servir el formulario HTML
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'formulario_ingreso.html'));
+    `);
+    console.log('Tabla "usuarios" creada.');
 });
 
 // Ruta para registrar usuarios y generar enlace único
@@ -73,20 +62,32 @@ app.post('/registrar', (req, res) => {
     // Generar enlace único
     const enlaceUnico = crypto.randomBytes(16).toString('hex');
 
-    // Insertar usuario en la base de datos
-    const query = `INSERT INTO usuarios (email, edicion, enlace_unico) VALUES (?, ?, ?)`;
-    db.run(query, [email, edicion, enlaceUnico], function (err) {
+    // Verificar si el número de edición ya está registrado con otro correo
+    const checkQuery = `SELECT * FROM usuarios WHERE edicion = ?`;
+    db.get(checkQuery, [edicion], (err, row) => {
         if (err) {
-            if (err.message.includes('UNIQUE')) {
-                return res.status(400).json({ error: 'El correo y número de edición ya están registrados.' });
-            }
-            return res.status(500).json({ error: 'Error al registrar usuario.' });
+            return res.status(500).json({ error: 'Error al verificar el número de edición.' });
         }
 
-        console.log(`Usuario registrado con éxito: ${email}, edición: ${edicion}, enlace: ${enlaceUnico}`);
+        if (row) {
+            return res.status(400).json({ error: 'El número de edición ya está registrado. Por favor, ingrese otro número.' });
+        }
 
-        // Responder al cliente con el enlace único
-        res.json({ mensaje: 'Registro exitoso.', enlace: `${BASE_URL}/descargar/${enlaceUnico}` });
+        // Insertar usuario en la base de datos
+        const insertQuery = `INSERT INTO usuarios (email, edicion, enlace_unico) VALUES (?, ?, ?)`;
+        db.run(insertQuery, [email, edicion, enlaceUnico], function (err) {
+            if (err) {
+                if (err.message.includes('UNIQUE')) {
+                    return res.status(400).json({ error: 'El correo ya está registrado.' });
+                }
+                return res.status(500).json({ error: 'Error al registrar usuario.' });
+            }
+
+            console.log(`Usuario registrado con éxito: ${email}, edición: ${edicion}, enlace: ${enlaceUnico}`);
+
+            // Responder al cliente con el enlace único
+            res.json({ mensaje: 'Registro exitoso.', enlace: `${BASE_URL}/descargar/${enlaceUnico}` });
+        });
     });
 });
 
