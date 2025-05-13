@@ -4,17 +4,20 @@ const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const bodyParser = require('body-parser');
 const crypto = require('crypto');
-const cors = require('cors'); // Importar CORS
+const cors = require('cors');
+const path = require('path'); // Importar path para manejar rutas
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000'; // Cambia REACT_APP_API_URL según tu configuración
 
 // Habilitar CORS para todas las solicitudes
 app.use(cors());
 
 // Habilitar parseo de JSON para solicitudes POST
 app.use(bodyParser.json());
+
+// Habilitar parseo de datos de formularios (en caso de formularios tradicionales)
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Configurar base de datos SQLite
 const db = new sqlite3.Database(':memory:', (err) => {
@@ -89,7 +92,7 @@ app.get('/descargar/:enlaceUnico', (req, res) => {
             }
 
             // Enviar archivo como respuesta
-            const filePath = 'ruta/al/archivo/descarga.pdf'; // Cambiar por la ruta real del archivo
+            const filePath = path.join(__dirname, 'ruta/al/archivo/descarga.pdf'); // Cambiar por la ruta real del archivo
             res.download(filePath, 'archivo.pdf', (err) => {
                 if (err) {
                     console.error('Error al enviar archivo:', err);
@@ -113,13 +116,13 @@ app.get('/registros', (req, res) => {
         res.json(rows);
     });
 });
-const path = require('path');
-// Iniciar servidor
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
+
 // Ruta para servir el formulario HTML
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'formulario_ingreso.html'));
 });
 
+// Iniciar servidor
+app.listen(PORT, () => {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+});
