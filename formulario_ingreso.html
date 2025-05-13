@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Registro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        .form-container {
+            max-width: 400px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-container h2 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .form-group button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .form-group button:hover {
+            background-color: #0056b3;
+        }
+
+        .error {
+            color: red;
+            font-size: 0.9em;
+        }
+
+        .success {
+            color: green;
+            font-size: 1em;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Registro de Descarga</h2>
+        <form id="registroForm">
+            <div class="form-group">
+                <label for="email">Correo Electrónico:</label>
+                <input type="email" id="email" name="email" required>
+                <span class="error" id="emailError"></span>
+            </div>
+            <div class="form-group">
+                <label for="edicion">Número de Edición:</label>
+                <input type="text" id="edicion" name="edicion" required>
+                <span class="error" id="edicionError"></span>
+            </div>
+            <div class="form-group">
+                <button type="submit">Registrar y Descargar</button>
+            </div>
+        </form>
+
+        <div id="mensaje" class="success"></div>
+    </div>
+
+    <script>
+        const formulario = document.getElementById('registroForm');
+        const mensajeDiv = document.getElementById('mensaje');
+
+        formulario.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const edicion = document.getElementById('edicion').value;
+
+            try {
+                // Enviar datos al backend
+                const response = await fetch('http://localhost:3000/registrar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, edicion }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Mostrar enlace único al usuario
+                    mensajeDiv.innerHTML = `
+                        <p>Registro exitoso. Tu enlace de descarga es:</p>
+                        <a href="${data.enlace}" target="_blank">${data.enlace}</a>
+                    `;
+                } else {
+                    // Mostrar mensaje de error
+                    mensajeDiv.innerHTML = `<p class="error">${data.error}</p>`;
+                }
+            } catch (error) {
+                console.error('Error al registrar:', error);
+                mensajeDiv.innerHTML = `<p class="error">Error al conectarse con el servidor1.</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
