@@ -8,6 +8,7 @@ const cors = require('cors'); // Importar CORS
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000'; // Cambia REACT_APP_API_URL según tu configuración
 
 // Habilitar CORS para todas las solicitudes
 app.use(cors());
