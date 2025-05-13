@@ -112,7 +112,12 @@ app.get('/registros', (req, res) => {
         res.json(rows);
     });
 });
+const path = require('path');
 
+// Ruta para servir el formulario HTML
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'formulario_ingreso.html'));
+});
 // Iniciar servidor
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
