@@ -95,36 +95,16 @@
     <script>
         const formulario = document.getElementById('registroForm');
         const mensajeDiv = document.getElementById('mensaje');
-        const emailError = document.getElementById('emailError');
-        const edicionError = document.getElementById('edicionError');
 
         formulario.addEventListener('submit', async (event) => {
             event.preventDefault();
 
-            // Limpiar mensajes de error
-            emailError.textContent = '';
-            edicionError.textContent = '';
-            mensajeDiv.textContent = '';
-
-            const email = document.getElementById('email').value.trim();
-            const edicion = document.getElementById('edicion').value.trim();
-            let hasError = false;
-
-            // Validar campos
-            if (!email) {
-                emailError.textContent = 'El correo electrónico es obligatorio.';
-                hasError = true;
-            }
-            if (!edicion) {
-                edicionError.textContent = 'El número de edición es obligatorio.';
-                hasError = true;
-            }
-
-            if (hasError) return;
+            const email = document.getElementById('email').value;
+            const edicion = document.getElementById('edicion').value;
 
             try {
                 // Enviar datos al backend
-                const response = await fetch('https://qrlinks.onrender.com/registrar', { // Reemplaza con tu BASE_URL
+                const response = await fetch('${BASE_URL}/registrar', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -138,24 +118,15 @@
                     // Mostrar enlace único al usuario
                     mensajeDiv.innerHTML = `
                         <p>Registro exitoso. Tu enlace de descarga es:</p>
-                        <a href="${data.enlace}" target="_blank" id="enlaceDescarga">${data.enlace}</a>
+                        <a href="${data.enlace}" target="_blank">${data.enlace}</a>
                     `;
-
-                    // Limpiar campos del formulario
-                    formulario.reset();
-
-                    // Agregar evento para limpiar mensaje cuando se haga clic en el enlace
-                    const enlaceDescarga = document.getElementById('enlaceDescarga');
-                    enlaceDescarga.addEventListener('click', () => {
-                        mensajeDiv.innerHTML = '';
-                    });
                 } else {
-                    // Mostrar mensaje de error proveniente del backend
-                    mensajeDiv.innerHTML = `<p class="error">${data.error || 'Ocurrió un error al realizar el registro.'}</p>`;
+                    // Mostrar mensaje de error
+                    mensajeDiv.innerHTML = `<p class="error">${data.error}</p>`;
                 }
             } catch (error) {
                 console.error('Error al registrar:', error);
-                mensajeDiv.innerHTML = `<p class="error">No se pudo conectar con el servidor. Por favor, inténtalo más tarde.</p>`;
+                mensajeDiv.innerHTML = `<p class="error">Error al conectarse con el servidor1.</p>`;
             }
         });
     </script>
