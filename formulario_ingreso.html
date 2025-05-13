@@ -138,8 +138,17 @@
                     // Mostrar enlace único al usuario
                     mensajeDiv.innerHTML = `
                         <p>Registro exitoso. Tu enlace de descarga es:</p>
-                        <a href="${data.enlace}" target="_blank">${data.enlace}</a>
+                        <a href="${data.enlace}" target="_blank" id="enlaceDescarga">${data.enlace}</a>
                     `;
+
+                    // Limpiar campos del formulario
+                    formulario.reset();
+
+                    // Agregar evento para limpiar mensaje cuando se haga clic en el enlace
+                    const enlaceDescarga = document.getElementById('enlaceDescarga');
+                    enlaceDescarga.addEventListener('click', () => {
+                        mensajeDiv.innerHTML = '';
+                    });
                 } else {
                     // Mostrar mensaje de error proveniente del backend
                     mensajeDiv.innerHTML = `<p class="error">${data.error || 'Ocurrió un error al realizar el registro.'}</p>`;
