@@ -4,7 +4,7 @@ const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const bodyParser = require('body-parser');
 const crypto = require('crypto');
-const cors = require('cors'); // Importar CORS
+const cors = require('cors');
 const path = require('path');
 
 const app = express();
@@ -25,18 +25,24 @@ const db = new sqlite3.Database(':memory:', (err) => {
     console.log('Conectado a la base de datos SQLite en memoria.');
 });
 
-// Crear tabla de usuarios y descargas
+// Crear tabla de usuarios con restricción UNIQUE en email y edicion
 db.serialize(() => {
     db.run(`
         CREATE TABLE usuarios (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT UNIQUE NOT NULL,
+            email TEXT NOT NULL,
             edicion TEXT NOT NULL,
             enlace_unico TEXT NOT NULL,
-            descargado INTEGER DEFAULT 0
+            descargado INTEGER DEFAULT 0,
+            CONSTRAINT unique_email_edicion UNIQUE (email, edicion)
         )
-    `);
-    console.log('Tabla "usuarios" creada.');
+    `, (err) => {
+        if (err) {
+            console.error('Error al crear la tabla "usuarios":', err.message);
+        } else {
+            console.log('Tabla "usuarios" creada con restricción UNIQUE.');
+        }
+    });
 });
 
 // Ruta para servir el formulario HTML
@@ -72,7 +78,7 @@ app.post('/registrar', (req, res) => {
     db.run(query, [email, edicion, enlaceUnico], function (err) {
         if (err) {
             if (err.message.includes('UNIQUE')) {
-                return res.status(400).json({ error: 'El correo ya está registrado.' });
+                return res.status(400).json({ error: 'El correo y número de edición ya están registrados.' });
             }
             return res.status(500).json({ error: 'Error al registrar usuario.' });
         }
