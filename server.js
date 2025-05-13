@@ -7,7 +7,7 @@ const crypto = require('crypto');
 const cors = require('cors'); // Importar CORS
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Habilitar CORS para todas las solicitudes
 app.use(cors());
