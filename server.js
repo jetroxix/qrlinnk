@@ -8,6 +8,10 @@ const cors = require('cors'); // Importar CORS
 
 const app = express();
 const PORT = 3000;
+// Ruta para servir el formulario HTML
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'formulario_ingreso.html'));
+});
 
 // Habilitar CORS para todas las solicitudes
 app.use(cors());
@@ -113,11 +117,6 @@ app.get('/registros', (req, res) => {
     });
 });
 const path = require('path');
-
-// Ruta para servir el formulario HTML
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'formulario_ingreso.html'));
-});
 // Iniciar servidor
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
