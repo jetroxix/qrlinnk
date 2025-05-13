@@ -38,7 +38,10 @@ db.serialize(() => {
     `);
     console.log('Tabla "usuarios" creada.');
 });
-
+// Ruta para servir el formulario HTML
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'formulario_ingreso.html'));
+});
 // Ruta para registrar usuarios y generar enlace único
 app.post('/registrar', (req, res) => {
     const { email, edicion } = req.body;
