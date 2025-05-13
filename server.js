@@ -4,20 +4,18 @@ const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const bodyParser = require('body-parser');
 const crypto = require('crypto');
-const cors = require('cors');
-const path = require('path'); // Importar path para manejar rutas
+const cors = require('cors'); // Importar CORS
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000'; // Cambia REACT_APP_API_URL según tu configuración
 
 // Habilitar CORS para todas las solicitudes
 app.use(cors());
 
 // Habilitar parseo de JSON para solicitudes POST
 app.use(bodyParser.json());
-
-// Habilitar parseo de datos de formularios (en caso de formularios tradicionales)
-app.use(bodyParser.urlencoded({ extended: true }));
 
 // Configurar base de datos SQLite
 const db = new sqlite3.Database(':memory:', (err) => {
@@ -41,12 +39,29 @@ db.serialize(() => {
     console.log('Tabla "usuarios" creada.');
 });
 
+// Ruta para servir el formulario HTML
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'formulario_ingreso.html'));
+});
+
 // Ruta para registrar usuarios y generar enlace único
 app.post('/registrar', (req, res) => {
     const { email, edicion } = req.body;
 
     if (!email || !edicion) {
         return res.status(400).json({ error: 'Correo y número de edición son requeridos.' });
+    }
+
+    // Validar formato del correo electrónico
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: 'El formato del correo electrónico no es válido.' });
+    }
+
+    // Validar que el número de edición sea alfanumérico
+    const edicionRegex = /^[a-zA-Z0-9]+$/;
+    if (!edicionRegex.test(edicion)) {
+        return res.status(400).json({ error: 'El número de edición debe ser alfanumérico.' });
     }
 
     // Generar enlace único
@@ -65,7 +80,7 @@ app.post('/registrar', (req, res) => {
         console.log(`Usuario registrado con éxito: ${email}, edición: ${edicion}, enlace: ${enlaceUnico}`);
 
         // Responder al cliente con el enlace único
-        res.json({ mensaje: 'Registro exitoso.', enlace: `/descargar/${enlaceUnico}` });
+        res.json({ mensaje: 'Registro exitoso.', enlace: `${BASE_URL}/descargar/${enlaceUnico}` });
     });
 });
 
@@ -117,12 +132,7 @@ app.get('/registros', (req, res) => {
     });
 });
 
-// Ruta para servir el formulario HTML
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'formulario_ingreso.html'));
-});
-
 // Iniciar servidor
 app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+    console.log(`Servidor corriendo en ${BASE_URL}`);
 });
